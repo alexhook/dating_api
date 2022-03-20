@@ -1,6 +1,5 @@
 from django.db import models
 from django.core.mail import send_mail
-from django.core.exceptions import ValidationError
 from django.contrib.auth.models import BaseUserManager, AbstractBaseUser, PermissionsMixin
 
 
@@ -35,6 +34,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     last_name = models.CharField(max_length=100)
     avatar = models.ImageField(upload_to='users/')
     gender = models.CharField(max_length=1, choices=GENDER_CHOICES)
+    likes = models.ManyToManyField('self', symmetrical=False)
 
     is_active = models.BooleanField(
         'Active', 

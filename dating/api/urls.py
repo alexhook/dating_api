@@ -1,6 +1,8 @@
-from django.urls import include, path
+from django.urls import path
 from api import views
 
+
 urlpatterns = [
-    path('clients/create', views.UserCreateAPIView.as_view(), name='user_create'),
+    path('clients/<int:id>/match', views.check_match, name='match'),
+    path('clients/create', views.UserCreateAPIView.as_view(), name='create_user'),
 ]
