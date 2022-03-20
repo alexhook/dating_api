@@ -1,7 +1,10 @@
-from rest_framework import serializers
+import os
 from .models import User
-from django.contrib.auth import password_validation
 from django.core import exceptions
+from rest_framework import serializers
+from django.contrib.auth import password_validation
+from .utils import validate_img_size, add_watermark
+from django.conf import settings
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -25,6 +28,12 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ('avatar', 'email', 'first_name', 'last_name', 'gender', 'password1', 'password2')
     
     def validate(self, attrs):
+        min_img_size = (200, 200)
+        if not validate_img_size(attrs['avatar'], min_img_size):
+            raise serializers.ValidationError({
+                'avatar': f'Minimum image size to upload is {min_img_size[0]} x {min_img_size[1]} px.'
+            })
+
         password1 = attrs['password1']
         password2 = attrs['password2']
 
@@ -41,7 +50,13 @@ class UserSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         user = User(
-            avatar = validated_data['avatar'],
+            avatar = add_watermark(
+                validated_data['avatar'],
+                os.path.join(settings.MEDIA_ROOT, 'img/wm.png'),
+                wm_dividor=4,
+                indent=(10, 10),
+                file_format='JPEG'
+            ),
             email = validated_data['email'],
             first_name = validated_data['first_name'],
             last_name = validated_data['last_name'],
