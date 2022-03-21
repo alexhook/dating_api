@@ -22,9 +22,7 @@ def validate_img_size(image: File, min_size: tuple):
         except (TypeError, ValueError):
             raise AssertionError('The "min_size" must be a tuple instance.')
 
-        if w < w_min or h < h_min:
-            return False
-        return True
+        return w >= w_min and h >= h_min
 
 
 def add_watermark(image: File, wm_path: Union[str, Path], wm_dividor: Union[int, float], indent: tuple, file_format: str):
