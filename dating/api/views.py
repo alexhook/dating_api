@@ -1,12 +1,14 @@
 from .models import User
-from rest_framework import viewsets, filters
 from .serializers import UserSerializer
 from rest_framework.request import Request
 from rest_framework.response import Response
+from rest_framework import viewsets, filters
 from rest_framework.generics import CreateAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.pagination import  PageNumberPagination
 from django_filters.rest_framework import DjangoFilterBackend
+from django_filters import rest_framework as dj_filters
+from .utils import great_circle
 from django.template.loader import render_to_string
 from rest_framework.decorators import api_view, permission_classes
 
@@ -17,12 +19,32 @@ class StandardResultsSetPagination(PageNumberPagination):
 class UserCreateAPIView(CreateAPIView):
     serializer_class = UserSerializer
 
+class UserListFilter(dj_filters.FilterSet):
+    distance = dj_filters.NumberFilter(label='Distance', method='filter_distance')
+
+    class Meta:
+        model = User
+        fields = ['gender', 'distance']
+
+    def filter_distance(self, queryset, name, value):
+        current_user = self.request.user
+        lat1 = current_user.latitude
+        lon1 = current_user.longitude
+
+        ids = []
+
+        for user in queryset:
+            if great_circle(lat1, lon1, user.latitude, user.longitude) <= value:
+                ids.append(user.id)
+        
+        return queryset.filter(id__in=ids)
+
 class UserListViewSet(viewsets.ModelViewSet):
     serializer_class = UserSerializer
     permission_classes = [IsAuthenticated]
     pagination_class = StandardResultsSetPagination
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
-    filterset_fields = ['gender']
+    filterset_class = UserListFilter
     search_fields = ['first_name', 'last_name']
 
     def get_queryset(self):

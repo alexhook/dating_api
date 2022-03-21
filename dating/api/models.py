@@ -35,6 +35,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     avatar = models.ImageField(upload_to='users/')
     gender = models.CharField(max_length=1, choices=GENDER_CHOICES)
     likes = models.ManyToManyField('self', symmetrical=False)
+    latitude = models.FloatField()
+    longitude = models.FloatField()
 
     is_active = models.BooleanField(
         'Active', 

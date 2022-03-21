@@ -25,13 +25,22 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('avatar', 'email', 'first_name', 'last_name', 'gender', 'password1', 'password2')
+        fields = ('avatar', 'email', 'first_name', 'last_name', 'gender', 'latitude', 'longitude', 'password1', 'password2')
     
     def validate(self, attrs):
         min_img_size = (200, 200)
         if not validate_img_size(attrs['avatar'], min_img_size):
             raise serializers.ValidationError({
                 'avatar': f'Minimum image size to upload is {min_img_size[0]} x {min_img_size[1]} px.'
+            })
+
+        if not (-90 <= attrs['latitude'] <= 90):
+            raise serializers.ValidationError({
+                'latitude': 'Lalitude value must be from -90 to 90 inclusive.'
+            })
+        if not (-180 <= attrs['longitude'] <= 180):
+            raise serializers.ValidationError({
+                'longitude': 'Longitude value must be from -180 to 180 inclusive.'
             })
 
         password1 = attrs['password1']
@@ -61,6 +70,8 @@ class UserSerializer(serializers.ModelSerializer):
             first_name = validated_data['first_name'],
             last_name = validated_data['last_name'],
             gender = validated_data['gender'],
+            latitude = validated_data['latitude'],
+            longitude = validated_data['longitude'],
             is_active = True,
         )
         user.set_password(validated_data['password1'])

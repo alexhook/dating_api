@@ -3,6 +3,7 @@ from io import BytesIO
 from typing import Union
 from pathlib import Path
 from django.core.files import File
+from math import radians, sin, cos, acos
 
 
 def validate_img_size(image: File, min_size: tuple):
@@ -58,3 +59,11 @@ def add_watermark(image: File, wm_path: Union[str, Path], wm_dividor: Union[int,
             name='.'.join((img_name, file_format.lower())))
 
         return result
+
+
+def great_circle(lat1, lon1, lat2, lon2):
+    """"
+    Returns geo distance between two Earth points.
+    """
+    lat1, lon1, lat2, lon2 = map(radians, [lat1, lon1, lat2, lon2])
+    return 6371 * acos(sin(lat1) * sin(lat2) + cos(lat1) * cos(lat2) * cos(lon1 - lon2))
